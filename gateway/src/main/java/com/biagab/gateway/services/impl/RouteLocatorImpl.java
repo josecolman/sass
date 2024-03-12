@@ -1,25 +1,31 @@
-package com.biagab.gateway.services;
+package com.biagab.gateway.services.impl;
 
 import com.biagab.gateway.models.Route;
+import com.biagab.gateway.services.RouteService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.BooleanSpec;
 import org.springframework.cloud.gateway.route.builder.Buildable;
 import org.springframework.cloud.gateway.route.builder.PredicateSpec;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 
+@Slf4j
 @AllArgsConstructor
-public class ApiPathRouteLocatorImpl implements RouteLocator {
+public class RouteLocatorImpl implements RouteLocator {
 
-    private final ApiRouteService apiRouteService;
+    private final RouteService routeService;
     private final RouteLocatorBuilder routeLocatorBuilder;
 
     @Override
     public Flux<org.springframework.cloud.gateway.route.Route> getRoutes() {
+
         RouteLocatorBuilder.Builder routesBuilder = routeLocatorBuilder.routes();
-        return apiRouteService.findApiRoutes()
+        return routeService.findRoutes()
                 .map(data -> routesBuilder.route(data.getId(), predicate -> setPredicateSpec(data, predicate)))
                 .collectList()
                 .flatMapMany(builders -> routesBuilder.build().getRoutes());
@@ -34,6 +40,11 @@ public class ApiPathRouteLocatorImpl implements RouteLocator {
 
         if (StringUtils.hasLength(data.getMethod()))
             booleanSpec.and().method(data.getMethod());
+
+        if (StringUtils.hasLength(data.getApiKey()))
+            booleanSpec.and().header("X-API-KEY", data.getApiKey());
+        else
+            booleanSpec.filters(f -> f.setStatus(HttpStatus.UNAUTHORIZED));
 
         return booleanSpec.uri(data.getUri());
     }

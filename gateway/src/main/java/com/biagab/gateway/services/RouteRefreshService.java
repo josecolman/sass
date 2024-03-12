@@ -1,6 +1,6 @@
 package com.biagab.gateway.services;
 
-public interface GatewayRouteService {
+public interface RouteRefreshService {
 
     void refreshRoutes();
 }

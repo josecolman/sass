@@ -1,15 +1,15 @@
 package com.biagab.gateway.components;
 
-import com.biagab.gateway.services.MongoDBInitializationService;
+import com.biagab.gateway.services.MongodbInitializationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class MongoInitializer implements CommandLineRunner {
+public class MongodbInitializer implements CommandLineRunner {
 
-    private final MongoDBInitializationService mongoDBInitializationService;
+    private final MongodbInitializationService mongoDBInitializationService;
 
     @Override
     public void run(String... args) {

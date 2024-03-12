@@ -1,24 +1,26 @@
-package com.biagab.gateway.models;
+package com.biagab.gateway.models.payloads;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class CreateOrUpdateApiRouteRequest {
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class RouteResponse {
 
     private String id;
-    @NotBlank
     private String path;
     private String method;
-    @NotBlank
     private String uri;
     private RewritePath rewrite;
     private String apiKey;
 
+    @Builder
     @Data
     public static class RewritePath {
         private String pattern = "/api/routing/(.*)";

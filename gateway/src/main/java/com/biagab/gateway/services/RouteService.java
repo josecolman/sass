@@ -1,25 +1,20 @@
 package com.biagab.gateway.services;
 
-
-import com.biagab.gateway.models.RouteConfig;
-import com.biagab.gateway.repos.RouteConfigRepository;
-import com.biagab.gateway.repos.ServiceRouteRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.biagab.gateway.models.payloads.RouteRequest;
+import com.biagab.gateway.models.Route;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@RequiredArgsConstructor
-@Service
-public class RouteService {
+public interface RouteService {
 
-    private final RouteConfigRepository repository;
+    Flux<Route> findRoutes();
 
-    public Flux<RouteConfig> getAllRoutes() {
-        return repository.findAll();
-    }
+    Mono<Route> findRoute(String id);
 
-    public Mono<RouteConfig> getRouteByPathAndApiKey(String path, String apiKey) {
-        return repository.findByPathAndApiKey(path, apiKey);
-    }
+    Mono<Void> createRoute(RouteRequest data);
+
+    Mono<Void> updateRoute(String id, RouteRequest data);
+
+    Mono<Void> deleteRoute(String id);
+
 }
