@@ -3,6 +3,7 @@ package com.biagab.gateway.components;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -15,70 +16,32 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
-public class LoggingFilter implements /*GatewayFilterFactory<LoggingFilter.Config>, */GatewayFilter {
+public class LoggingFilter implements GatewayFilter {
 
     private final LoggingFilter.Config config;
-/*
-    @Override
-    public GatewayFilter apply(LoggingFilter.Config config) {
-        return (exchange, chain) -> {
-            if (config.isEnabled()) {
-                System.out.println("Original URL: " + exchange.getRequest().getURI());
-
-                return chain.filter(exchange).then(Mono.fromRunnable(() -> {
-                    System.out.println("Redirected URL: " + exchange.getResponse().getStatusCode());
-                }));
-            } else {
-                // If filter is disabled, just continue the chain
-                return chain.filter(exchange);
-            }
-        };
-    }
-
-    @Override
-    public Class<Config> getConfigClass() {
-        return Config.class;
-    }*/
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
         if (config.isEnabled()) {
 
-            System.out.println("Original URL: " + exchange.getRequest().getURI());
-
-            // In your logging filter's `filter` method:
-            //ServerWebExchangeUtils exchangeUtils = ServerWebExchangeUtils.class.cast(exchange.getAttribute(ServerWebExchangeUtils.class.getName()));
-            //URI originalUri = exchangeUtils.getOriginalRequestUrl(exchange);
-            //URI rewrittenUri = exchangeUtils.getCurrentRequestUrl(exchange);
-
-
-            //logger.info("Original URI: {}", originalUri);
-            //logger.info("Rewritten URI: {}", rewrittenUri);
-
-
+            log.info("Original URL: {}", exchange.getRequest().getURI());
 
             return chain.filter(exchange).doOnError((ex) -> {
 
-                // Manejar el error aquí
-                System.err.println("Error during filter chain execution: " + ex.getMessage());
-
-                // Acceder a la URI de redirección en caso de error
-                //String redirectedUri = exchange.getRequest().getURI().toString();
-                //System.out.println("Redirected URI (on error): " + redirectedUri);
+                log.error("Error during filter chain execution: {}", ex.getMessage(), ex);
 
             }).then(Mono.fromRunnable(() -> {
 
-
-                // Acceder a la URI de redirección en caso de éxito
-                //String redirectedUri = exchange.getRequest().getURI().toString();
-                //System.out.println("Redirected URI (on success): " + redirectedUri);
+                log.info("Redirected URL status code: {}", exchange.getResponse().getStatusCode());
 
             }));
 
         } else {
+
             // If filter is disabled, just continue the chain
             return chain.filter(exchange);
         }
@@ -87,10 +50,9 @@ public class LoggingFilter implements /*GatewayFilterFactory<LoggingFilter.Confi
     @Component
     @Setter
     @Getter
-    @ConfigurationProperties(prefix = "logging-filter")
+    @ConfigurationProperties(prefix = "logging.filter")
     public static class Config {
         private boolean enabled;
-
     }
 }
 

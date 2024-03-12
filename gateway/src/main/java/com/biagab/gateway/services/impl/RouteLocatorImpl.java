@@ -1,5 +1,6 @@
 package com.biagab.gateway.services.impl;
 
+import com.biagab.gateway.components.LoggingFilter;
 import com.biagab.gateway.models.Route;
 import com.biagab.gateway.services.RouteService;
 import lombok.AllArgsConstructor;
@@ -20,13 +21,20 @@ public class RouteLocatorImpl implements RouteLocator {
 
     private final RouteService routeService;
     private final RouteLocatorBuilder routeLocatorBuilder;
+    private final LoggingFilter loggingFilter;
 
     @Override
     public Flux<org.springframework.cloud.gateway.route.Route> getRoutes() {
 
         RouteLocatorBuilder.Builder routesBuilder = routeLocatorBuilder.routes();
         return routeService.findRoutes()
-                .map(data -> routesBuilder.route(data.getId(), predicate -> setPredicateSpec(data, predicate)))
+                .map(data -> routesBuilder
+                        .route(
+                                data.getId(),
+                                predicate -> setPredicateSpec(data, predicate)
+
+                        )
+                )
                 .collectList()
                 .flatMapMany(builders -> routesBuilder.build().getRoutes());
     }
@@ -45,6 +53,8 @@ public class RouteLocatorImpl implements RouteLocator {
             booleanSpec.and().header("X-API-KEY", data.getApiKey());
         else
             booleanSpec.filters(f -> f.setStatus(HttpStatus.UNAUTHORIZED));
+
+        booleanSpec.filters(f -> f.filter(loggingFilter));
 
         return booleanSpec.uri(data.getUri());
     }
