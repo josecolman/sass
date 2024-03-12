@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+
+  routing_service:
+    image: routing:1.0.0
+    #environment:
+    #  - CONN_STR=mongodb://admin:qwerty**@mongodb
+    #command: '/bin/bash -c "sleep 5; mongosh $$CONN_STR --eval \"show dbs;\""'
+    depends_on:
+      - mongodb_server
+
+  mongodb_server:
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    container_name: mongodb_server
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=qwerty**
+    volumes:
+      - type: bind
+        source: ./mongodb_data
+        target: /data/db
+    ports:
+      - "27017:27017"
+
+
